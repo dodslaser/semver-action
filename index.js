@@ -198,22 +198,24 @@ async function main () {
   const patchChanges = []
   for (const commit of commits) {
     try {
-      const cAst = cc.toConventionalChangelogFormat(cc.parser(commit.commit.message))
+      const message = (typeof commit == 'string') ? commit : commit.commit.message
+      const cAst = cc.toConventionalChangelogFormat(cc.parser(message))
+
       if (bumpTypes.major.includes(cAst.type)) {
-        majorChanges.push(commit.commit.message)
+        majorChanges.push(message)
         core.info(`[MAJOR] Commit ${commit.sha} of type ${cAst.type} will cause a major version bump.`)
       } else if (bumpTypes.minor.includes(cAst.type)) {
-        minorChanges.push(commit.commit.message)
+        minorChanges.push(message)
         core.info(`[MINOR] Commit ${commit.sha} of type ${cAst.type} will cause a minor version bump.`)
       } else if (bumpTypes.patchAll || bumpTypes.patch.includes(cAst.type)) {
-        patchChanges.push(commit.commit.message)
+        patchChanges.push(message)
         core.info(`[PATCH] Commit ${commit.sha} of type ${cAst.type} will cause a patch version bump.`)
       } else {
         core.info(`[SKIP] Commit ${commit.sha} of type ${cAst.type} will not cause any version bump.`)
       }
       for (const note of cAst.notes) {
         if (note.title === 'BREAKING CHANGE') {
-          majorChanges.push(commit.commit.message)
+          majorChanges.push(message)
           core.info(`[MAJOR] Commit ${commit.sha} has a BREAKING CHANGE mention, causing a major version bump.`)
         }
       }
